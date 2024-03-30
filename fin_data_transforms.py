@@ -5,55 +5,47 @@ import fin_data_factory as fdf
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from scipy.optimize import brentq
-
-
-# Function to calculate implied volatility
-def implied_volatility(option_price, S, K, T, r, option_type='call'):
-    def bs_price(sigma):
-        d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
-        d2 = d1 - sigma * np.sqrt(T)
-        if option_type == 'call':
-            price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
-        else:
-            price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
-        return price - option_price
-
-    try:
-        implied_vol = brentq(bs_price, 1e-6, 1)
-    except ValueError:
-        implied_vol = np.nan
-    return implied_vol
+from scipy.interpolate import griddata
+import plotly.graph_objects as go
+import plotly.io as pio
+pio.renderers.default = 'jupyterlab'
 
 # Main function to fetch data and plot the volatility surface
-def plot_vol_surface(ticker_symbol):
-    calls = fdf.get_options_chain(ticker_symbol)
-    S = yf.Ticker(ticker_symbol).history(period="1d")['Close'][-1]  # Current stock price
+def plot_vol_surface(chain, fileName):
+    chain = chain.dropna()
     r = 0.01  # Assume a constant risk-free rate
-
     strikes = []
     maturities = []
     vols = []
 
-    for _, row in calls.iterrows():
+    for _, row in chain.iterrows():
         K = row['strike']
-        T = (pd.to_datetime(row['ExpirationDate']) - pd.Timestamp.now()).days / 365
-        price = row['lastPrice']
-
-        iv = implied_volatility(price, S, K, T, r)
+        T = row['T']
+        iv = row['impliedVolatility']
         if np.isnan(iv) or iv == 0:
             continue
-
         strikes.append(K)
         maturities.append(T)
         vols.append(iv)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    # Convert lists to numpy arrays for griddata function
+    strikes = np.array(strikes)
+    maturities = np.array(maturities)
+    vols = np.array(vols)
 
-    ax.scatter(maturities, strikes, vols, zdir='z', s=20, c='b', depthshade=True)
-    ax.set_xlabel('Time to Expiration (Years)')
-    ax.set_ylabel('Strike Price')
-    ax.set_zlabel('Implied Volatility')
-    ax.set_title('Volatility Surface for ' + ticker_symbol)
+    # Create grid
+    ti = np.linspace(maturities.min(), maturities.max(), 100)
+    xi = np.linspace(strikes.min(), strikes.max(), 100)
+    XI, TI = np.meshgrid(xi, ti)
 
-    plt.show()
+    # Interpolate vols onto grid
+    VI = griddata((maturities, strikes), vols, (TI, XI), method='cubic')
+    # Create a 3D surface plot
+    fig = go.Figure(data=[go.Surface(z=VI, x=XI, y=TI)])
+    fig.update_layout(title='Volatility Surface', autosize=True,
+                      scene=dict(
+                          xaxis_title='Strike Price',
+                          yaxis_title='Time to Expiration (Years)',
+                          zaxis_title='Implied Volatility'),
+                      margin=dict(l=65, r=50, b=65, t=90))
+    fig.write_html(f"{fileName}.html")
