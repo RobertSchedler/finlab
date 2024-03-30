@@ -78,11 +78,11 @@ def get_options_chain(ticker_symbol):
     all_options['T'] = ((pd.to_datetime(all_options['expirationDate'], utc=True) - pd.Timestamp.now(tz='UTC')).dt.days / 365).dropna()
     all_options['R'] = 0.04
     all_options['OT'] = all_options['optionType']
-    all_options['impliedVolatility'] = all_options.apply(implied_volatility, axis=1)
+    all_options['impliedVolatility2'] = all_options.apply(implied_volatility, axis=1)
 
 
 
-    return all_options.where(all_options['volume'] > 1000).dropna()
+    return all_options.where(all_options['volume'] > 1).dropna()
 
 def implied_volatility(row):
     P = row['P']
