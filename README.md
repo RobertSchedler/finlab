@@ -21,4 +21,4 @@ Roadmap
 
 -Tune hedges. Preferred delta,gamma.. etc..
 
--Beta corrolation
+-Beta correlation
