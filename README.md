@@ -1,6 +1,6 @@
 # finlab
 My playground. 
-I am NOT responsible for owies, boo boos, loss of life or limb.
+I am NOT responsible loss of life or limb.
 
 
 TODO
