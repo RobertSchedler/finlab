@@ -12,6 +12,7 @@ TODO
 -Make fuctions less single use
 
 Roadmap
+
 -Capture historical options price, spline when needed
 
 -Backtesting
