@@ -5,11 +5,7 @@ I am NOT responsible for loss of life or limb.
 
 TODO
 
--Clean up lib_test. id like to have one cell be totally encapsulated 
-
--Fix whatever is wrong with the vol surfaces
-
--Make fuctions less single use
+-Fix whatever is wrong with the vol surfaces, points work.. surface is broke
 
 Roadmap
 
