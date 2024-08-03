@@ -31,7 +31,7 @@ N/A
 
 ## Contribution
 
-Please submit pull requests to us.
+Please submit pull requests.
 
 ## License
 
